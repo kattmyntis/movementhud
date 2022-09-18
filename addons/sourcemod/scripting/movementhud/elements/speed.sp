@@ -4,14 +4,38 @@ MHudEnumPreference SpeedMode;
 MHudXYPreference SpeedPosition;
 MHudRGBPreference SpeedNormalColor;
 MHudRGBPreference SpeedPerfColor;
-MHudBoolPreference SpeedTakeoff;
-MHudBoolPreference SpeedColorBySpeed;
+MHudEnumPreference SpeedTakeoff;
+MHudEnumPreference SpeedColorBySpeed;
+MHudEnumPreference SpeedRounding;
+MHudRGBPreference SpeedGainColor;
+MHudRGBPreference SpeedLossColor;
 
 static const char Modes[SpeedMode_COUNT][] =
 {
     "Disabled",
     "As decimal",
     "As whole number"
+};
+
+static const char Roundings[Round_COUNT][] =
+{
+    "Round down",
+    "Round to nearest",
+    "Round up"
+};
+
+static const char Takeoff[Takeoff_COUNT][] =
+{
+    "Disabled",
+    "Jumps only",
+    "Enabled"
+};
+
+static const char SpeedColors[SpeedColor_COUNT][] =
+{
+    "Disabled",
+    "Color by current speed",
+    "Color by gain"
 };
 
 void OnPluginStart_Element_Speed()
@@ -22,8 +46,12 @@ void OnPluginStart_Element_Speed()
     SpeedPosition = new MHudXYPreference("speed_position", "Speed - Position", -1, 725);
     SpeedNormalColor = new MHudRGBPreference("speed_color_normal", "Speed - Normal Color", 255, 255, 255);
     SpeedPerfColor = new MHudRGBPreference("speed_color_perf", "Speed - Perfect Bhop Color", 0, 255, 0);
-    SpeedTakeoff = new MHudBoolPreference("speed_takeoff", "Speed - Show Takeoff", true);
-    SpeedColorBySpeed = new MHudBoolPreference("speed_color_by_speed", "Speed - Color by Speed", false);
+    SpeedTakeoff = new MHudEnumPreference("speed_takeoff", "Speed - Show Takeoff", Takeoff, sizeof(Takeoff) - 1, Takeoff_Jump);
+    SpeedRounding = new MHudEnumPreference("speed_rounding", "Speed - Rounding", Roundings, sizeof(Roundings) - 1, Round_Down);
+
+    SpeedColorBySpeed = new MHudEnumPreference("speed_color_by_speed", "Speed - Color by Speed", SpeedColors, sizeof(SpeedColors) - 1, SpeedColor_None);
+    SpeedGainColor = new MHudRGBPreference("speed_color_gain", "Speed - Gain Color", 0, 255, 0);
+    SpeedLossColor = new MHudRGBPreference("speed_color_loss", "Speed - Loss Color", 255, 0, 0);
 }
 
 void OnPlayerRunCmdPost_Element_Speed(int client, int target)
@@ -33,27 +61,47 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
     {
         return;
     }
-
+    int rounding = SpeedRounding.GetInt(client);
     float speed = gF_CurrentSpeed[target];
-
-    bool showTakeoff = SpeedTakeoff.GetBool(client);
-    bool colorBySpeed = SpeedColorBySpeed.GetBool(client);
+    
+    int showTakeoff = SpeedTakeoff.GetInt(client);
+    int colorBySpeed = SpeedColorBySpeed.GetInt(client);
 
     float xy[2];
     SpeedPosition.GetXY(client, xy);
 
     int rgb[3];
-    if (!colorBySpeed)
+    switch (colorBySpeed)
     {
-        MHudRGBPreference colorPreference = gB_DidPerf[target]
-            ? SpeedPerfColor
-            : SpeedNormalColor;
+        case SpeedColor_None:
+        {
+            MHudRGBPreference colorPreference = gB_DidPerf[target]
+                ? SpeedPerfColor
+                : SpeedNormalColor;
 
-        colorPreference.GetRGB(client, rgb);
-    }
-    else
-    {
-        GetColorBySpeed(speed, rgb);
+            colorPreference.GetRGB(client, rgb);
+        }
+        case SpeedColor_Speed:
+        {
+            GetColorBySpeed(speed, rgb);
+        }
+        case SpeedColor_Gain:
+        {
+            MHudRGBPreference colorPreference;
+            if (gF_CurrentSpeed[client] - gF_OldSpeed[client] > 0.1)
+            {
+                colorPreference = SpeedGainColor;
+            }
+            else if (gF_CurrentSpeed[client] - gF_OldSpeed[client] < -0.1)
+            {
+                colorPreference = SpeedLossColor;
+            }
+            else 
+            {
+                colorPreference = SpeedNormalColor;
+            }
+            colorPreference.GetRGB(client, rgb);
+        }
     }
 
     Call_OnDrawSpeed(client, xy, rgb);
@@ -61,7 +109,7 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
 
     if (mode == SpeedMode_Float)
     {
-        if (!showTakeoff || !gB_DidTakeoff[target])
+        if (showTakeoff == Takeoff_None || !gB_DidTakeoff[target] || (showTakeoff == Takeoff_Jump && !gB_DidJump[target]))
         {
             ShowSyncHudText(client, HudSync, "%.2f", speed);
         }
@@ -72,14 +120,42 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
     }
     else
     {
-        int speedInt = RoundFloat(speed);
-        if (!showTakeoff || !gB_DidTakeoff[target])
+        int speedInt;
+        int takeoffSpeedInt;
+        switch (rounding)
+        {
+            case Round_Down:
+            {
+                // Prevent speed flickering
+                speedInt = RoundToFloor(speed);
+                if (speed - speedInt >= 0.999)
+                {
+                    speedInt++;
+                }
+                takeoffSpeedInt = RoundToFloor(gF_TakeoffSpeed[target]);
+                if (gF_TakeoffSpeed[target] - takeoffSpeedInt >= 0.999)
+                {
+                    takeoffSpeedInt++;
+                }
+            }
+            case Round_Nearest:
+            {
+                speedInt = RoundToNearest(speed);
+                takeoffSpeedInt = RoundToNearest(gF_TakeoffSpeed[target]);
+            }
+            case Round_Up:
+            {
+                speedInt = RoundToCeil(speed);
+                takeoffSpeedInt = RoundToCeil(gF_TakeoffSpeed[target]);
+            }
+        }
+        if (showTakeoff == Takeoff_None || !gB_DidTakeoff[target] || (showTakeoff == Takeoff_Jump && !gB_DidJump[target]))
         {
             ShowSyncHudText(client, HudSync, "%d", speedInt);
         }
         else
         {
-            ShowSyncHudText(client, HudSync, "%d\n(%d)", speedInt, RoundFloat(gF_TakeoffSpeed[target]));
+            ShowSyncHudText(client, HudSync, "%d\n(%d)", speedInt, takeoffSpeedInt);
         }
     }
 }

@@ -3,14 +3,23 @@
 #include <topmenus>
 #include <sourcemod>
 #include <clientprefs>
-
+#include <movementapi>
 #include <json>
 #include <base64>
+#include <gokz>
+#include <gokz/core>
+#include <gokz/hud>
+
+#undef REQUIRE_EXTENSIONS
+#undef REQUIRE_PLUGIN
+
+#include <gokz/replays>
 
 #pragma semicolon 1
 #pragma newdecls required
 
 bool gB_IsReady;
+bool gB_GOKZReplays;
 
 #include <movementhud>
 
@@ -30,11 +39,13 @@ bool gB_IsReady;
 #include "movementhud/api/natives.sp"
 #include "movementhud/api/forwards.sp"
 
+#include "movementhud/gokz.sp"
+
 public Plugin myinfo =
 {
     name = "MovementHUD",
-    author = "Sikari",
-    description = "Provides customizable displays for movement",
+    author = "Sikari, zer0.k",
+    description = "Provides customizable displays for movement, LoB version",
     version = MHUD_VERSION,
     url = MHUD_SOURCE_URL
 };
@@ -50,7 +61,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
     OnPluginStart_Commands();
-    OnPluginStart_Movement();
     OnPluginStart_Preferences();
     OnPluginStart_PreferencesDefaults();
 
@@ -72,6 +82,21 @@ public void OnPluginStart()
     }
 }
 
+public void OnAllPluginsLoaded()
+{
+    gB_GOKZReplays = LibraryExists("gokz-replays");
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	gB_GOKZReplays = gB_GOKZReplays || StrEqual(name, "gokz-replays");
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	gB_GOKZReplays = gB_GOKZReplays && !StrEqual(name, "gokz-replays");
+}
+
 public void OnClientPutInServer(int client)
 {
     OnClientPutInServer_Movement(client);
@@ -80,12 +105,21 @@ public void OnClientPutInServer(int client)
     OnClientPutInServer_PreferencesChatInput(client);
 }
 
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
+{
+    OnPlayerRunCmd_TrackMovement(client);
+}
+
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
 {
     OnPlayerRunCmdPost_Movement(client, buttons, mouse);
+}
 
-    if (!IsFakeClient(client))
+public void OnGameFrame()
+{
+    for (int client = 1; client <= MaxClients; client++)
     {
+        if (!IsClientInGame(client) || IsFakeClient(client)) continue;
         int target = GetSpectedOrSelf(client);
 
         OnPlayerRunCmdPost_Element_Keys(client, target);

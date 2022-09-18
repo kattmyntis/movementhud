@@ -29,6 +29,12 @@ void OnPluginStart_PreferencesCode()
     PreferencesInCode.Push(IndicatorsJBEnabled);
     PreferencesInCode.Push(IndicatorsCJEnabled);
     PreferencesInCode.Push(IndicatorsPBEnabled);
+
+    // zer0.k's Revision
+    // Be careful, this might break...
+    PreferencesInCode.Push(SpeedRounding);
+    PreferencesInCode.Push(SpeedGainColor);
+    PreferencesInCode.Push(SpeedLossColor);
 }
 
 void GeneratePreferencesCode(int client, char[] buffer, int maxlength)

@@ -10,17 +10,21 @@ bool gB_DidCrouchJump[MAXPLAYERS + 1];
 bool gB_DidTakeoff[MAXPLAYERS + 1];
 float gF_TakeoffSpeed[MAXPLAYERS + 1];
 
+float gF_OldSpeed[MAXPLAYERS + 1];
 float gF_CurrentSpeed[MAXPLAYERS + 1];
 float gF_LastJumpInput[MAXPLAYERS + 1];
 
 static bool OldOnGround[MAXPLAYERS + 1];
 static MoveType OldMoveType[MAXPLAYERS + 1];
 
+HUDInfo gH_BotInfo[MAXPLAYERS + 1];
+bool gB_GotBotInfo[MAXPLAYERS + 1];
+
 // =====[ LISTENERS ]=====
 
-void OnPluginStart_Movement()
+void OnPlayerRunCmd_TrackMovement(int client)
 {
-	HookEvent("player_jump", Event_Jump);
+    gF_OldSpeed[client] = Movement_GetSpeed(client);
 }
 
 void OnClientPutInServer_Movement(int client)
@@ -36,14 +40,38 @@ void OnClientPutInServer_Movement(int client)
 
     OldOnGround[client] = false;
     OldMoveType[client] = MOVETYPE_NONE;
+
+    gB_GotBotInfo[client] = false;
 }
 
 void OnPlayerRunCmdPost_Movement(int client, int buttons, const int mouse[2])
 {
     gI_MouseX[client] = mouse[0];
-    gI_Buttons[client] = buttons;
-    gF_CurrentSpeed[client] = GetSpeed(client);
 
+    if (IsFakeClient(client) && gB_GOKZReplays)
+    {
+        gB_GotBotInfo[client] = !!GOKZ_RP_GetPlaybackInfo(client, gH_BotInfo[client]);
+    }
+
+    if (gB_GotBotInfo[client])
+    {
+        gF_CurrentSpeed[client] = gH_BotInfo[client].Speed;
+        gI_Buttons[client] = gH_BotInfo[client].Buttons;
+        
+        if (gH_BotInfo[client].Jumped || (gH_BotInfo[client].Buttons & IN_JUMP && gH_BotInfo[client].IsTakeoff))
+        {
+            gB_DidJump[client] = true;
+        }
+        if (gH_BotInfo[client].HitJB)
+        {
+            gB_DidJumpBug[client] = true;
+        }
+    }
+    else
+    {
+        gF_CurrentSpeed[client] = GetSpeed(client);
+        gI_Buttons[client] = buttons;
+    }
     TrackMovement(client);
 }
 
@@ -54,12 +82,14 @@ bool JumpedRecently(int client)
 
 // =====[ PRIVATE ]=====
 
-public void Event_Jump(Event event, const char[] name, bool dontBroadcast)
+public void Movement_OnPlayerJump(int client, bool jumpbug)
 {
-    int client = GetClientOfUserId(event.GetInt("userid"));
-
     gB_DidJump[client] = true;
-    gB_DidJumpBug[client] = gI_GroundTicks[client] <= 0;
+    gB_DidJumpBug[client] = Movement_GetJumpbugged(client);
+    if (jumpbug)
+    {
+        DoTakeoff(client, true);
+    }
 }
 
 static void TrackMovement(int client)
@@ -70,8 +100,7 @@ static void TrackMovement(int client)
     }
 
     MoveType moveType = GetEntityMoveType(client);
-
-    bool onGround = IsOnGround(client);
+    bool onGround = gB_GotBotInfo[client] ? gH_BotInfo[client].OnGround : IsOnGround(client);
     if (onGround)
     {
         ResetTakeoff(client);
@@ -84,6 +113,8 @@ static void TrackMovement(int client)
             && OldMoveType[client] == MOVETYPE_LADDER)
         {
             DoTakeoff(client, false);
+            // Ladderjump is also a jump.
+            gB_DidJump[client] = true;
         }
 
         // Jumped or fell off a ledge, probably.
@@ -116,13 +147,7 @@ static bool IsOnGround(int client)
 
 static float GetSpeed(int client)
 {
-    float vec[3];
-    GetEntPropVector(client, Prop_Data, "m_vecVelocity", vec);
-
-    float x = Pow(vec[0], 2.0);
-    float y = Pow(vec[1], 2.0);
-
-    return SquareRoot(x + y);
+    return Movement_GetSpeed(client);
 }
 
 static void ResetTakeoff(int client)
@@ -138,13 +163,13 @@ static void ResetTakeoff(int client)
 
 static void DoTakeoff(int client, bool didJump)
 {
-    bool didPerf = gI_GroundTicks[client] == 1;
-    float takeoffSpeed = gF_CurrentSpeed[client];
+    bool didPerf = gB_GotBotInfo[client] ? gH_BotInfo[client].HitPerf : GOKZ_GetHitPerf(client);
+    float takeoffSpeed = gB_GotBotInfo[client] ? gH_BotInfo[client].Speed : Movement_GetTakeoffSpeed(client);
 
     Call_OnMovementTakeoff(client, didJump, didPerf, takeoffSpeed);
 
     gB_DidPerf[client] = didPerf;
-    gB_DidTakeoff[client] = true;
+    gB_DidTakeoff[client] = gB_GotBotInfo[client] ? gH_BotInfo[client].IsTakeoff : true;
     gF_TakeoffSpeed[client] = takeoffSpeed;
 
     if (didJump)
