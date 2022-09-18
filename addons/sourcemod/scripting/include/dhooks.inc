@@ -1,0 +1,1 @@
+../../../../gokz/addons/sourcemod/scripting/include/dhooks.inc
