@@ -9,6 +9,8 @@ MHudBoolPreference IndicatorsPBEnabled;
 
 MHudBoolPreference IndicatorsAbbreviations;
 
+MHudBoolPreference IndicatorsFTGEnabled;
+
 void OnPluginStart_Element_Indicators()
 {
     HudSync = CreateHudSynchronizer();
@@ -19,6 +21,7 @@ void OnPluginStart_Element_Indicators()
     IndicatorsCJEnabled = new MHudBoolPreference("indicators_cj_enabled", "Indicators - Crouch Jump", false);
     IndicatorsPBEnabled = new MHudBoolPreference("indicators_pb_enabled", "Indicators - Perfect Bhop", false);
     IndicatorsAbbreviations = new MHudBoolPreference("indicators_abbrs", "Indicators - Abbreviations", true);
+    IndicatorsFTGEnabled = new MHudBoolPreference("indicators_ftg", "Indicators - First Tick Gain", true);
 }
 
 void OnPlayerRunCmdPost_Element_Indicators(int client, int target)
@@ -26,7 +29,7 @@ void OnPlayerRunCmdPost_Element_Indicators(int client, int target)
     bool drawJB = IndicatorsJBEnabled.GetBool(client);
     bool drawCJ = IndicatorsCJEnabled.GetBool(client);
     bool drawPB = IndicatorsPBEnabled.GetBool(client);
-
+    bool drawFTG = IndicatorsFTGEnabled.GetBool(client);
     // Nothing enabled
     if (!drawJB && !drawCJ && !drawPB)
     {
@@ -69,5 +72,20 @@ void OnPlayerRunCmdPost_Element_Indicators(int client, int target)
         );
     }
 
+    if (drawPB && gB_DidPerf[target])
+    {
+        Format(buffer, sizeof(buffer), "%s%s\n",
+            buffer,
+            useAbbr ? "PERF" : "PERFECT BHOP"
+        );
+    }
+
+    if (drawFTG && gB_FirstTickGain[target])
+    {
+        Format(buffer, sizeof(buffer), "%s%s\n",
+            buffer,
+            useAbbr ? "G" : "FIRST TICK GAIN"
+        );
+    }
     ShowSyncHudText(client, HudSync, "%s", buffer);
 }

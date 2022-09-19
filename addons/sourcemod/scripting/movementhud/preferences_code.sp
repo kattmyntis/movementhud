@@ -35,6 +35,7 @@ void OnPluginStart_PreferencesCode()
     PreferencesInCode.Push(SpeedRounding);
     PreferencesInCode.Push(SpeedGainColor);
     PreferencesInCode.Push(SpeedLossColor);
+    PreferencesInCode.Push(IndicatorsFTGEnabled);
 }
 
 void GeneratePreferencesCode(int client, char[] buffer, int maxlength)

@@ -20,6 +20,8 @@ static MoveType OldMoveType[MAXPLAYERS + 1];
 HUDInfo gH_BotInfo[MAXPLAYERS + 1];
 bool gB_GotBotInfo[MAXPLAYERS + 1];
 
+bool gB_FirstTickGain[MAXPLAYERS + 1];
+
 // =====[ LISTENERS ]=====
 
 void OnPlayerRunCmd_TrackMovement(int client)
@@ -100,6 +102,11 @@ static void TrackMovement(int client)
     }
 
     MoveType moveType = GetEntityMoveType(client);
+    if (moveType != MOVETYPE_WALK)
+    {
+        // Can't airstrafe without the right movetype.
+        gB_FirstTickGain[client] = false;
+    }
     bool onGround = gB_GotBotInfo[client] ? gH_BotInfo[client].OnGround : IsOnGround(client);
     if (onGround)
     {
@@ -159,6 +166,7 @@ static void ResetTakeoff(int client)
     gB_DidPerf[client] = false;
     gB_DidJumpBug[client] = false;
     gB_DidCrouchJump[client] = false;
+    gB_FirstTickGain[client] = false;
 }
 
 static void DoTakeoff(int client, bool didJump)
@@ -176,4 +184,6 @@ static void DoTakeoff(int client, bool didJump)
     {
         gB_DidCrouchJump[client] = IsDucking(client);
     }
+
+    gB_FirstTickGain[client] = gF_CurrentSpeed[client] > gF_OldSpeed[client];
 }
