@@ -34,6 +34,7 @@ enum
 {
     SpeedColor_None = 0,
     SpeedColor_Speed,
-    SpeedColor_Gain,
+    SpeedColor_GainInstant,
+    SpeedColor_GainAverage,
     SpeedColor_COUNT
 }

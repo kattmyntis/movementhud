@@ -35,7 +35,8 @@ static const char SpeedColors[SpeedColor_COUNT][] =
 {
     "Disabled",
     "Color by current speed",
-    "Color by gain"
+    "Color by gain (Instant)",
+    "Color by gain (Average)"
 };
 
 void OnPluginStart_Element_Speed()
@@ -75,9 +76,19 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
     {
         case SpeedColor_None:
         {
-            MHudRGBPreference colorPreference = gB_DidPerf[target]
-                ? SpeedPerfColor
-                : SpeedNormalColor;
+            MHudRGBPreference colorPreference;
+            if (gB_GotBotInfo[target])
+            {
+                colorPreference = gH_BotInfo[target].HitPerf && !gH_BotInfo[target].OnGround
+                    ? SpeedPerfColor
+                    : SpeedNormalColor;
+            }
+            else
+            {
+                colorPreference = gB_DidPerf[target]
+                    ? SpeedPerfColor
+                    : SpeedNormalColor;
+            }
 
             colorPreference.GetRGB(client, rgb);
         }
@@ -85,7 +96,7 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
         {
             GetColorBySpeed(speed, rgb);
         }
-        case SpeedColor_Gain:
+        case SpeedColor_GainInstant:
         {
             MHudRGBPreference colorPreference;
             if (gF_CurrentSpeed[client] - gF_OldSpeed[client] > 0.1)
@@ -98,9 +109,45 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
             }
             else 
             {
-                colorPreference = SpeedNormalColor;
+                colorPreference = gB_DidPerf[target]
+                    ? SpeedPerfColor
+                    : SpeedNormalColor;
             }
             colorPreference.GetRGB(client, rgb);
+        }
+        case SpeedColor_GainAverage:
+        {
+            MHudRGBPreference colorPreference = gB_DidPerf[target]
+                ? SpeedPerfColor
+                : SpeedNormalColor;
+            colorPreference.GetRGB(client, rgb);
+            float gainTicks;
+            int gainRGB[3];
+            char buffer[128];
+            
+            for (int i = 0; i < MAX_TRACKED_TICKS; i++)
+            {
+                if (gF_SpeedChange[client][i] > 0.1)
+                {
+                    gainTicks += 1.0;
+                }
+                else if (gF_SpeedChange[client][i] < -0.1)
+                {
+                    gainTicks -= 1.0;
+                }
+            }
+            
+            if (gainTicks >= 0)
+            {
+                SpeedGainColor.GetRGB(client, gainRGB);
+                ColorLerp(rgb, gainRGB, gainTicks/MAX_TRACKED_TICKS, rgb);
+            }
+            else
+            {
+                SpeedLossColor.GetRGB(client, gainRGB);
+                ColorLerp(rgb, gainRGB, -gainTicks/MAX_TRACKED_TICKS, rgb);
+            }
+            PrintHintText(client, buffer);
         }
     }
 

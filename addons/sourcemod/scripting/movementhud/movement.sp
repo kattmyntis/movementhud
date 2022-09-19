@@ -22,6 +22,9 @@ bool gB_GotBotInfo[MAXPLAYERS + 1];
 
 bool gB_FirstTickGain[MAXPLAYERS + 1];
 
+#define MAX_TRACKED_TICKS 16
+float gF_SpeedChange[MAXPLAYERS + 1][MAX_TRACKED_TICKS];
+
 // =====[ LISTENERS ]=====
 
 void OnPlayerRunCmd_TrackMovement(int client)
@@ -46,7 +49,7 @@ void OnClientPutInServer_Movement(int client)
     gB_GotBotInfo[client] = false;
 }
 
-void OnPlayerRunCmdPost_Movement(int client, int buttons, const int mouse[2])
+void OnPlayerRunCmdPost_Movement(int client, int buttons, const int mouse[2], int tickcount)
 {
     gI_MouseX[client] = mouse[0];
 
@@ -74,7 +77,7 @@ void OnPlayerRunCmdPost_Movement(int client, int buttons, const int mouse[2])
         gF_CurrentSpeed[client] = GetSpeed(client);
         gI_Buttons[client] = buttons;
     }
-    TrackMovement(client);
+    TrackMovement(client, tickcount);
 }
 
 bool JumpedRecently(int client)
@@ -94,7 +97,7 @@ public void Movement_OnPlayerJump(int client, bool jumpbug)
     }
 }
 
-static void TrackMovement(int client)
+static void TrackMovement(int client, int tickcount)
 {
     if (IsJumping(client))
     {
@@ -107,7 +110,9 @@ static void TrackMovement(int client)
         // Can't airstrafe without the right movetype.
         gB_FirstTickGain[client] = false;
     }
+
     bool onGround = gB_GotBotInfo[client] ? gH_BotInfo[client].OnGround : IsOnGround(client);
+
     if (onGround)
     {
         ResetTakeoff(client);
@@ -132,6 +137,8 @@ static void TrackMovement(int client)
 
         gI_GroundTicks[client] = 0;
     }
+
+    gF_SpeedChange[client][tickcount % MAX_TRACKED_TICKS] = gF_CurrentSpeed[client] - gF_OldSpeed[client];
 
     OldOnGround[client] = onGround;
     OldMoveType[client] = moveType;

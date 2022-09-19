@@ -112,7 +112,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
 {
-    OnPlayerRunCmdPost_Movement(client, buttons, mouse);
+    OnPlayerRunCmdPost_Movement(client, buttons, mouse, tickcount);
 }
 
 public void OnGameFrame()

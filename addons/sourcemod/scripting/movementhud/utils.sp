@@ -54,3 +54,11 @@ void StripColorBytes(char[] buffer, int maxlength)
 
     strcopy(buffer, maxlength, output);
 }
+
+void ColorLerp(int rgbFrom[3], int rgbTo[3], float t, int rgbOut[3])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        rgbOut[i] = RoundToNearest(rgbFrom[i] * (1 - t) + rgbTo[i] * t);
+    }
+}
