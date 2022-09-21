@@ -72,14 +72,6 @@ void OnPlayerRunCmdPost_Element_Indicators(int client, int target)
         );
     }
 
-    if (drawPB && gB_DidPerf[target])
-    {
-        Format(buffer, sizeof(buffer), "%s%s\n",
-            buffer,
-            useAbbr ? "PERF" : "PERFECT BHOP"
-        );
-    }
-
     if (drawFTG && gB_FirstTickGain[target])
     {
         Format(buffer, sizeof(buffer), "%s%s\n",
