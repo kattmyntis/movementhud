@@ -87,6 +87,7 @@ public int MenuHandler_Main(Menu menu, MenuAction action, int param1, int param2
     {
         delete menu;
     }
+    return 0;
 }
 
 public int MenuHandler_Preferences(Menu menu, MenuAction action, int param1, int param2)
@@ -101,13 +102,13 @@ public int MenuHandler_Preferences(Menu menu, MenuAction action, int param1, int
         bool found = GetPreferenceById(id, preference);
         if (!found)
         {
-            return;
+            return 0;
         }
 
         if (gB_InAdvMode[param1])
         {
             WaitForPreferenceChatInputFromClient(param1, id, menu.Selection);
-            return;
+            return 0;
         }
 
         char value[MHUD_MAX_VALUE];
@@ -128,4 +129,5 @@ public int MenuHandler_Preferences(Menu menu, MenuAction action, int param1, int
     {
         delete menu;
     }
+    return 0;
 }

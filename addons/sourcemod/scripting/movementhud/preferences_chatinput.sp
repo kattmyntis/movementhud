@@ -10,32 +10,32 @@ void OnClientPutInServer_PreferencesChatInput(int client)
 
 void WaitForPreferenceChatInputFromClient(int client, char preferenceId[MHUD_MAX_ID], int menuSelection = 0)
 {
-    Preference preference;
+	Preference preference;
 
-    bool found = GetPreferenceById(preferenceId, preference);
-    if (!found)
-    {
-        return;
-    }
+	bool found = GetPreferenceById(preferenceId, preference);
+	if (!found)
+	{
+		return;
+	}
 
-    InputTimer[client] = CreateTimeoutTimer(client);
-    InputPreferenceId[client] = preferenceId;
-    InputMenuSelection[client] = menuSelection;
+	InputTimer[client] = CreateTimeoutTimer(client);
+	InputPreferenceId[client] = preferenceId;
+	InputMenuSelection[client] = menuSelection;
 
-    char format[64];
-    GetPreferenceFormat(false, preference, format, sizeof(format));
+	char format[64];
+	GetPreferenceFormat(false, preference, format, sizeof(format));
 
-    MHud_PrintToChat(client, "Enter a \x03value\x01 for \x05%s\x01 in the chat", preference.Name);
-    MHud_PrintToChat(client, "Value format: %s", format);
-    MHud_PrintToChat(client, "Available custom inputs: \x03cancel\x01, \x03reset\x01");
+	MHud_PrintToChat(client, "Enter a \x03value\x01 for \x05%s\x01 in the chat", preference.Name);
+	MHud_PrintToChat(client, "Value format: %s", format);
+	MHud_PrintToChat(client, "Available custom inputs: \x03cancel\x01, \x03reset\x01");
 }
 
 static Handle CreateTimeoutTimer(int client)
 {
-    ResetWaitForPreferenceChatInputFromClient(client);
+	ResetWaitForPreferenceChatInputFromClient(client);
 
-    int userId = GetClientUserId(client);
-    return CreateTimer(15.0, Timer_InputTimeout, userId);
+	int userId = GetClientUserId(client);
+	return CreateTimer(15.0, Timer_InputTimeout, userId);
 }
 
 public Action Timer_InputTimeout(Handle timer, int userid)
@@ -46,37 +46,38 @@ public Action Timer_InputTimeout(Handle timer, int userid)
 		MHud_PrintToChat(client, "\x07Input timed out!\x01");
 		ResetWaitForPreferenceChatInputFromClient(client, true);
 	}
+	return Plugin_Continue;
 }
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
 {
-    if (InputPreferenceId[client][0] == '\0')
-    {
-        return Plugin_Continue;
-    }
+	if (InputPreferenceId[client][0] == '\0')
+	{
+		return Plugin_Continue;
+	}
 
-    char inputBuffer[MHUD_MAX_VALUE];
-    strcopy(inputBuffer, sizeof(inputBuffer), sArgs);
+	char inputBuffer[MHUD_MAX_VALUE];
+	strcopy(inputBuffer, sizeof(inputBuffer), sArgs);
 
-    TrimString(inputBuffer);
+	TrimString(inputBuffer);
 
-    if (StrEqual(inputBuffer, "cancel", false))
-    {
-        HandleCancelInput(client);
-    }
-    else if (StrEqual(inputBuffer, "reset", false))
-    {
-        HandleResetInput(client, InputPreferenceId[client]);
-    }
-    else
-    {
-        HandlePreferenceInput(client, InputPreferenceId[client], inputBuffer);
-    }
+	if (StrEqual(inputBuffer, "cancel", false))
+	{
+		HandleCancelInput(client);
+	}
+	else if (StrEqual(inputBuffer, "reset", false))
+	{
+		HandleResetInput(client, InputPreferenceId[client]);
+	}
+	else
+	{
+		HandlePreferenceInput(client, InputPreferenceId[client], inputBuffer);
+	}
 
-    RedisplayPreferencesMenu(client, InputMenuSelection[client]);
+	RedisplayPreferencesMenu(client, InputMenuSelection[client]);
 
-    ResetWaitForPreferenceChatInputFromClient(client);
-    return Plugin_Handled;
+	ResetWaitForPreferenceChatInputFromClient(client);
+	return Plugin_Handled;
 }
 
 static void HandleCancelInput(int client)
@@ -86,39 +87,39 @@ static void HandleCancelInput(int client)
 
 static void HandleResetInput(int client, char preferenceId[MHUD_MAX_ID])
 {
-    Preference preference;
+	Preference preference;
 
-    bool found = GetPreferenceById(preferenceId, preference);
-    if (!found)
-    {
-        return;
-    }
+	bool found = GetPreferenceById(preferenceId, preference);
+	if (!found)
+	{
+		return;
+	}
 
-    SetPreferenceValue(client, preference, preference.DefaultValue);
-    PrintChangeMessage(client, preference);
+	SetPreferenceValue(client, preference, preference.DefaultValue);
+	PrintChangeMessage(client, preference);
 }
 
 static void HandlePreferenceInput(int client, char preferenceId[MHUD_MAX_ID], char input[MHUD_MAX_VALUE])
 {
-    Preference preference;
+	Preference preference;
 
-    bool found = GetPreferenceById(preferenceId, preference);
-    if (!found)
-    {
-        return;
-    }
+	bool found = GetPreferenceById(preferenceId, preference);
+	if (!found)
+	{
+		return;
+	}
 
-    SetPreferenceValue(client, preference, input);
-    PrintChangeMessage(client, preference);
+	SetPreferenceValue(client, preference, input);
+	PrintChangeMessage(client, preference);
 }
 
 static void ResetWaitForPreferenceChatInputFromClient(int client, bool fromTimer = false)
 {
-    InputPreferenceId[client] = "";
-    InputMenuSelection[client] = 0;
+	InputPreferenceId[client] = "";
+	InputMenuSelection[client] = 0;
 
-    if (!fromTimer)
-    {
-        delete InputTimer[client];
-    }
+	if (!fromTimer)
+	{
+		delete InputTimer[client];
+	}
 }

@@ -43,48 +43,49 @@ bool gB_GOKZReplays;
 
 public Plugin myinfo =
 {
-    name = "MovementHUD",
-    author = "Sikari, zer0.k",
-    description = "Provides customizable displays for movement, LoB version",
-    version = MHUD_VERSION,
-    url = MHUD_SOURCE_URL
+	name = "MovementHUD",
+	author = "Sikari, zer0.k",
+	description = "Provides customizable displays for movement, LoB version",
+	version = MHUD_VERSION,
+	url = MHUD_SOURCE_URL
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    RegPluginLibrary("MovementHUD");
+	RegPluginLibrary("MovementHUD");
 
-    OnAskPluginLoad2_Natives();
-    OnAskPluginLoad2_Forwards();
+	OnAskPluginLoad2_Natives();
+	OnAskPluginLoad2_Forwards();
+	return APLRes_Success;
 }
 
 public void OnPluginStart()
 {
-    OnPluginStart_Commands();
-    OnPluginStart_Preferences();
-    OnPluginStart_PreferencesDefaults();
+	OnPluginStart_Commands();
+	OnPluginStart_Preferences();
+	OnPluginStart_PreferencesDefaults();
 
-    OnPluginStart_Element_Speed();
-    OnPluginStart_Element_Keys();
-    OnPluginStart_Element_Indicators();
+	OnPluginStart_Element_Speed();
+	OnPluginStart_Element_Keys();
+	OnPluginStart_Element_Indicators();
 
-    OnPluginStart_PreferencesCode();
+	OnPluginStart_PreferencesCode();
 
-    Call_OnReady();
-    gB_IsReady = true;
+	Call_OnReady();
+	gB_IsReady = true;
 
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        if (IsClientConnected(i))
-        {
-            OnClientPutInServer(i);
-        }
-    }
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientConnected(i))
+		{
+			OnClientPutInServer(i);
+		}
+	}
 }
 
 public void OnAllPluginsLoaded()
 {
-    gB_GOKZReplays = LibraryExists("gokz-replays");
+	gB_GOKZReplays = LibraryExists("gokz-replays");
 }
 
 public void OnLibraryAdded(const char[] name)
@@ -99,31 +100,32 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnClientPutInServer(int client)
 {
-    OnClientPutInServer_Movement(client);
-    OnClientPutInServer_Preferences(client);
-    OnClientPutInServer_PreferencesMenu(client);
-    OnClientPutInServer_PreferencesChatInput(client);
+	OnClientPutInServer_Movement(client);
+	OnClientPutInServer_Preferences(client);
+	OnClientPutInServer_PreferencesMenu(client);
+	OnClientPutInServer_PreferencesChatInput(client);
 }
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
 {
-    OnPlayerRunCmd_TrackMovement(client);
+	OnPlayerRunCmd_TrackMovement(client);
+	return Plugin_Continue;
 }
 
 public void OnPlayerRunCmdPost(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2])
 {
-    OnPlayerRunCmdPost_Movement(client, buttons, mouse, tickcount);
+	OnPlayerRunCmdPost_Movement(client, buttons, mouse, tickcount);
 }
 
 public void OnGameFrame()
 {
-    for (int client = 1; client <= MaxClients; client++)
-    {
-        if (!IsClientInGame(client) || IsFakeClient(client)) continue;
-        int target = GetSpectedOrSelf(client);
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsClientInGame(client) || IsFakeClient(client)) continue;
+		int target = GetSpectedOrSelf(client);
 
-        OnPlayerRunCmdPost_Element_Keys(client, target);
-        OnPlayerRunCmdPost_Element_Speed(client, target);
-        OnPlayerRunCmdPost_Element_Indicators(client, target);
-    }
+		OnPlayerRunCmdPost_Element_Keys(client, target);
+		OnPlayerRunCmdPost_Element_Speed(client, target);
+		OnPlayerRunCmdPost_Element_Indicators(client, target);
+	}
 }

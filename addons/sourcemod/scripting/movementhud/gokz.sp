@@ -36,7 +36,6 @@ static void PotentiallyDisableInfoPanel(int client)
 
     if (keysModeVal != KeysMode_None && speedModeVal != SpeedMode_None)
     {
-        GOKZ_SetOption(client, gC_HUDOptionNames[HUDOption_TimerText], TimerText_TPMenu);
         GOKZ_SetOption(client, gC_HUDOptionNames[HUDOption_InfoPanel], InfoPanel_Disabled);
     }
 }
