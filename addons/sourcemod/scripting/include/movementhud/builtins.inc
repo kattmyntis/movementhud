@@ -8,6 +8,14 @@ enum
 
 enum
 {
+    KeysSpaceMode_NativeHD = 0,
+    KeysSpaceMode_ResizedHD,
+    KeysSpaceMode_NativeQHD,
+    KeysSpaceMode_COUNT
+};
+
+enum
+{
     SpeedMode_None = 0,
     SpeedMode_Float,
     SpeedMode_Integer,
@@ -32,9 +40,22 @@ enum
 
 enum
 {
-    SpeedColor_None = 0,
-    SpeedColor_Speed,
-    SpeedColor_GainInstant,
-    SpeedColor_GainAverage,
-    SpeedColor_COUNT
+    SpeedKeyColor_None = 0,
+    SpeedKeyColor_Speed,
+    SpeedKeyColor_GainInstant,
+    SpeedKeyColor_GainAverage,
+    SpeedKeyColor_COUNT
+}
+
+enum
+{
+    Char_W,
+    Char_A,
+    Char_S,
+    Char_D,
+    Char_Crouch,
+    Char_Jump,
+    Char_ArrLeft,
+    Char_ArrRight,
+    Char_COUNT
 }

@@ -31,7 +31,7 @@ static const char Takeoff[Takeoff_COUNT][] =
     "Enabled"
 };
 
-static const char SpeedColors[SpeedColor_COUNT][] =
+static const char SpeedColors[SpeedKeyColor_COUNT][] =
 {
     "Disabled",
     "Color by current speed",
@@ -50,7 +50,7 @@ void OnPluginStart_Element_Speed()
     SpeedTakeoff = new MHudEnumPreference("speed_takeoff", "Speed - Show Takeoff", Takeoff, sizeof(Takeoff) - 1, Takeoff_Jump);
     SpeedRounding = new MHudEnumPreference("speed_rounding", "Speed - Rounding", Roundings, sizeof(Roundings) - 1, Round_Down);
 
-    SpeedColorBySpeed = new MHudEnumPreference("speed_color_by_speed", "Speed - Color by Speed", SpeedColors, sizeof(SpeedColors) - 1, SpeedColor_None);
+    SpeedColorBySpeed = new MHudEnumPreference("speed_color_by_speed", "Speed - Color by Speed", SpeedColors, sizeof(SpeedColors) - 1, SpeedKeyColor_None);
     SpeedGainColor = new MHudRGBPreference("speed_color_gain", "Speed - Gain Color", 0, 255, 0);
     SpeedLossColor = new MHudRGBPreference("speed_color_loss", "Speed - Loss Color", 255, 0, 0);
 }
@@ -74,7 +74,7 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
     int rgb[3];
     switch (colorBySpeed)
     {
-        case SpeedColor_None:
+        case SpeedKeyColor_None:
         {
             MHudRGBPreference colorPreference;
             if (gB_GotBotInfo[target])
@@ -92,11 +92,11 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
 
             colorPreference.GetRGB(client, rgb);
         }
-        case SpeedColor_Speed:
+        case SpeedKeyColor_Speed:
         {
             GetColorBySpeed(speed, rgb);
         }
-        case SpeedColor_GainInstant:
+        case SpeedKeyColor_GainInstant:
         {
             MHudRGBPreference colorPreference;
             if (gF_CurrentSpeed[client] - gF_OldSpeed[client] > 0.1)
@@ -115,7 +115,7 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
             }
             colorPreference.GetRGB(client, rgb);
         }
-        case SpeedColor_GainAverage:
+        case SpeedKeyColor_GainAverage:
         {
             MHudRGBPreference colorPreference = gB_DidPerf[target]
                 ? SpeedPerfColor
@@ -123,7 +123,6 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
             colorPreference.GetRGB(client, rgb);
             float gainTicks;
             int gainRGB[3];
-            char buffer[128];
             
             for (int i = 0; i < MAX_TRACKED_TICKS; i++)
             {
@@ -147,7 +146,6 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
                 SpeedLossColor.GetRGB(client, gainRGB);
                 ColorLerp(rgb, gainRGB, -gainTicks/MAX_TRACKED_TICKS, rgb);
             }
-            PrintHintText(client, buffer);
         }
     }
 

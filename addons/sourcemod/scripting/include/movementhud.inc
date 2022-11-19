@@ -12,7 +12,7 @@
 #define MHUD_TAG_RAW "[MovementHUD]"
 #define MHUD_TAG_COLOR "[\x0CMovementHUD\x01]"
 
-#define MHUD_VERSION "3.0.1-LoB5"
+#define MHUD_VERSION "3.0.1-LoB6"
 #define MHUD_SOURCE_URL "https://github.com/zer0k-z/MovementHUD"
 
 typeset MHudPreferenceInputHandler
@@ -177,6 +177,7 @@ stock void MHud_PrintToChat(int client, const char[] format, any ...)
 // =====[ HANDLERS ]=====
 
 #tryinclude <movementhud/helpers>
+#tryinclude <movementhud/keycenter>
 #tryinclude <movementhud/builtins>
 #tryinclude <movementhud/preference-xy>
 #tryinclude <movementhud/preference-rgb>
