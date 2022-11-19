@@ -59,3 +59,11 @@ enum
     Char_ArrRight,
     Char_COUNT
 }
+
+enum
+{
+    KeyMouseStyle_Disabled,
+    KeysMouseStyle_Side,
+    KeysMouseStyle_Line,
+    KeysMouseStyle_COUNT
+}
