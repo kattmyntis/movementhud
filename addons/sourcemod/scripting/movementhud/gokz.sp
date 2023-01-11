@@ -34,12 +34,12 @@ static void PotentiallyDisableInfoPanel(int client)
     int keysModeVal = keysMode.GetInt(client);
     int speedModeVal = speedMode.GetInt(client);
 
-    if (keysModeVal != KeysMode_None && speedModeVal != SpeedMode_None)
+    if (speedModeVal != SpeedMode_None && GOKZ_GetOption(client, gC_HUDOptionNames[HUDOption_SpeedText]) != SpeedText_Disabled)
     {
-        GOKZ_SetOption(client, gC_HUDOptionNames[HUDOption_InfoPanel], InfoPanel_Disabled);
-        if (GOKZ_GetOption(client, gC_HUDOptionNames[HUDOption_TimerText]) > TimerText_TPMenu)
-        {
-            GOKZ_SetOption(client, gC_HUDOptionNames[HUDOption_TimerText], TimerText_TPMenu);
-        }
+        GOKZ_SetOption(client, gC_HUDOptionNames[HUDOption_SpeedText], SpeedText_Disabled);
+    }
+    if (keysModeVal != KeysMode_None && GOKZ_GetOption(client, gC_HUDOptionNames[HUDOption_ShowKeys]) != ShowKeys_Disabled)
+    {
+        GOKZ_SetOption(client, gC_HUDOptionNames[HUDOption_ShowKeys], ShowKeys_Disabled);
     }
 }
