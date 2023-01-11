@@ -63,8 +63,8 @@ void ColorLerp(int rgbFrom[3], int rgbTo[3], float t, int rgbOut[3])
     }
 }
 
-// The message buffer is only 16 slots long, and we need to share them between 6 channels. 
-// Assuming a message is sent every game frame and no collision happens, each channel used should be only taking 2.5 slots on average.
+// The message buffer is only 16 slots long, and we need to share them between 6 channels.
+// Assuming a message is sent every game frame, each channel used should be only taking 2.5 slots on average.
 // This also assumes all channels are used equally.
 float GetTextHoldTime(float interval)
 {
