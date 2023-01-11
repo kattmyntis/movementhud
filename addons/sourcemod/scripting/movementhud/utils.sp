@@ -68,5 +68,5 @@ void ColorLerp(int rgbFrom[3], int rgbTo[3], float t, int rgbOut[3])
 // This also assumes all channels are used equally.
 float GetTextHoldTime(float interval)
 {
-    return 2.5 * interval;
+    return 3 * interval;
 }
