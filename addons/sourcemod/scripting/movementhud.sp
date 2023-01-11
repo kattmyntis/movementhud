@@ -124,8 +124,8 @@ public void OnGameFrame()
 		if (!IsClientInGame(client) || IsFakeClient(client)) continue;
 		int target = GetSpectedOrSelf(client);
 
-		OnPlayerRunCmdPost_Element_Keys(client, target);
-		OnPlayerRunCmdPost_Element_Speed(client, target);
-		OnPlayerRunCmdPost_Element_Indicators(client, target);
+		OnGameFrame_Element_Keys(client, target);
+		OnGameFrame_Element_Speed(client, target);
+		OnGameFrame_Element_Indicators(client, target);
 	}
 }

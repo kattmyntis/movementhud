@@ -24,7 +24,7 @@ void OnPluginStart_Element_Indicators()
     IndicatorsFTGEnabled = new MHudBoolPreference("indicators_ftg", "Indicators - First Tick Gain", false);
 }
 
-void OnPlayerRunCmdPost_Element_Indicators(int client, int target)
+void OnGameFrame_Element_Indicators(int client, int target)
 {
     bool drawJB = IndicatorsJBEnabled.GetBool(client);
     bool drawCJ = IndicatorsCJEnabled.GetBool(client);
@@ -43,7 +43,7 @@ void OnPlayerRunCmdPost_Element_Indicators(int client, int target)
     IndicatorsPosition.GetXY(client, xy);
 
     Call_OnDrawIndicators(client, xy, rgb);
-    SetHudTextParams(xy[0], xy[1], 0.5, rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
+    SetHudTextParams(xy[0], xy[1], GetTextHoldTime(GetTickInterval()), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
 
     bool useAbbr = IndicatorsAbbreviations.GetBool(client);
 

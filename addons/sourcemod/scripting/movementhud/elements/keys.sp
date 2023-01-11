@@ -55,7 +55,7 @@ void OnPluginStart_Element_Keys()
     KeysLossColor = new MHudRGBPreference("keys_color_loss", "Keys - Loss Color", 255, 0, 0);
 }
 
-void OnPlayerRunCmdPost_Element_Keys(int client, int target)
+void OnGameFrame_Element_Keys(int client, int target)
 {
     int mode = KeysMode.GetInt(client);
     if (mode == KeysMode_None)
@@ -142,7 +142,7 @@ void OnPlayerRunCmdPost_Element_Keys(int client, int target)
 
 
     Call_OnDrawKeys(client, xy, rgb);
-    SetHudTextParams(xy[0], xy[1], 0.5, rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
+    SetHudTextParams(xy[0], xy[1], GetTextHoldTime(GetTickInterval()), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
 
     int mouseDirectionStyle = KeysMouseDirection.GetInt(client);
     switch (mouseDirectionStyle)

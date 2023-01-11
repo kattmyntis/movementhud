@@ -55,7 +55,7 @@ void OnPluginStart_Element_Speed()
     SpeedLossColor = new MHudRGBPreference("speed_color_loss", "Speed - Loss Color", 255, 0, 0);
 }
 
-void OnPlayerRunCmdPost_Element_Speed(int client, int target)
+void OnGameFrame_Element_Speed(int client, int target)
 {
     int mode = SpeedMode.GetInt(client);
     if (mode == SpeedMode_None)
@@ -150,7 +150,8 @@ void OnPlayerRunCmdPost_Element_Speed(int client, int target)
     }
 
     Call_OnDrawSpeed(client, xy, rgb);
-    SetHudTextParams(xy[0], xy[1], 0.5, rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
+    
+    SetHudTextParams(xy[0], xy[1], GetTextHoldTime(GetTickInterval()), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
 
     if (mode == SpeedMode_Float)
     {
