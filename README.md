@@ -16,3 +16,4 @@ A versatile SourceMod plugin providing customizable displays for player movement
 - Fix MHUD display taking over GOKZ's display, hiding features like race announcements
 - Better GOKZ replay bot integration
 - Add more color by speed options
+- Slightly increase display quality in return for rare flickering.
