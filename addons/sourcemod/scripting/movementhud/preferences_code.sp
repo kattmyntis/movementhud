@@ -36,9 +36,11 @@ void OnPluginStart_PreferencesCode()
     PreferencesInCode.Push(SpeedGainColor);
     PreferencesInCode.Push(SpeedLossColor);
     PreferencesInCode.Push(IndicatorsFTGEnabled);
-    // LoB6 changes
+
     PreferencesInCode.Push(KeysGainColor);
     PreferencesInCode.Push(KeysLossColor);
+
+    PreferencesInCode.Push(IndicatorsMode);
 }
 
 void GeneratePreferencesCode(int client, char[] buffer, int maxlength)

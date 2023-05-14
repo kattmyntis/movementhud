@@ -39,17 +39,20 @@ static const char SpeedColors[SpeedKeyColor_COUNT][] =
     "Color by gain (Average)"
 };
 
-void OnPluginStart_Element_Speed()
+void OnPluginStart_Elements_Mode_Speed()
+{
+    SpeedMode = new MHudEnumPreference("speed_mode", "Speed - Mode", Modes, sizeof(Modes) - 1, SpeedMode_None);
+    SpeedPosition = new MHudXYPreference("speed_position", "Speed - Position", -1, 725);
+}
+
+void OnPluginStart_Elements_Other_Speed()
 {
     HudSync = CreateHudSynchronizer();
 
-    SpeedMode = new MHudEnumPreference("speed_mode", "Speed - Mode", Modes, sizeof(Modes) - 1, SpeedMode_None);
-    SpeedPosition = new MHudXYPreference("speed_position", "Speed - Position", -1, 725);
     SpeedNormalColor = new MHudRGBPreference("speed_color_normal", "Speed - Normal Color", 255, 255, 255);
     SpeedPerfColor = new MHudRGBPreference("speed_color_perf", "Speed - Perfect Bhop Color", 0, 255, 0);
     SpeedTakeoff = new MHudEnumPreference("speed_takeoff", "Speed - Show Takeoff", Takeoff, sizeof(Takeoff) - 1, Takeoff_Jump);
     SpeedRounding = new MHudEnumPreference("speed_rounding", "Speed - Rounding", Roundings, sizeof(Roundings) - 1, Round_Down);
-
     SpeedColorBySpeed = new MHudEnumPreference("speed_color_by_speed", "Speed - Color by Speed", SpeedColors, sizeof(SpeedColors) - 1, SpeedKeyColor_None);
     SpeedGainColor = new MHudRGBPreference("speed_color_gain", "Speed - Gain Color", 0, 255, 0);
     SpeedLossColor = new MHudRGBPreference("speed_color_loss", "Speed - Loss Color", 255, 0, 0);
@@ -151,7 +154,7 @@ void OnGameFrame_Element_Speed(int client, int target)
 
     Call_OnDrawSpeed(client, xy, rgb);
     
-    SetHudTextParams(xy[0], xy[1], GetTextHoldTime(GetTickInterval()), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
+    SetHudTextParams(xy[0], xy[1], GetTextHoldTimeMHUD(client), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
 
     if (mode == SpeedMode_Float)
     {

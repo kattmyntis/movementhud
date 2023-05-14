@@ -1,5 +1,6 @@
 static Handle HudSync;
 
+MHudBoolPreference IndicatorsMode;
 MHudRGBPreference IndicatorsColor;
 MHudXYPreference IndicatorsPosition;
 
@@ -11,27 +12,34 @@ MHudBoolPreference IndicatorsAbbreviations;
 
 MHudBoolPreference IndicatorsFTGEnabled;
 
-void OnPluginStart_Element_Indicators()
+void OnPluginStart_Elements_Mode_Indicators()
+{
+    IndicatorsMode = new MHudBoolPreference("indicators_mode", "Indicators - Mode", true);
+    IndicatorsPosition = new MHudXYPreference("indicators_position", "Indicators - Position", 550, 725);
+}
+
+void OnPluginStart_Elements_Other_Indicators()
 {
     HudSync = CreateHudSynchronizer();
 
     IndicatorsColor = new MHudRGBPreference("indicators_color", "Indicators - Color", 0, 255, 0);
-    IndicatorsPosition = new MHudXYPreference("indicators_position", "Indicators - Position", 550, 725);
     IndicatorsJBEnabled = new MHudBoolPreference("indicators_jb_enabled", "Indicators - Jump Bug", false);
     IndicatorsCJEnabled = new MHudBoolPreference("indicators_cj_enabled", "Indicators - Crouch Jump", false);
     IndicatorsPBEnabled = new MHudBoolPreference("indicators_pb_enabled", "Indicators - Perfect Bhop", false);
-    IndicatorsAbbreviations = new MHudBoolPreference("indicators_abbrs", "Indicators - Abbreviations", true);
     IndicatorsFTGEnabled = new MHudBoolPreference("indicators_ftg", "Indicators - First Tick Gain", false);
+    IndicatorsAbbreviations = new MHudBoolPreference("indicators_abbrs", "Indicators - Abbreviations", true);
 }
 
 void OnGameFrame_Element_Indicators(int client, int target)
 {
-    bool drawJB = IndicatorsJBEnabled.GetBool(client);
-    bool drawCJ = IndicatorsCJEnabled.GetBool(client);
-    bool drawPB = IndicatorsPBEnabled.GetBool(client);
-    bool drawFTG = IndicatorsFTGEnabled.GetBool(client);
+    bool draw = IndicatorsMode.GetBool(client);
+    bool drawJB = IndicatorsJBEnabled.GetBool(client) && gB_DidJumpBug[target];
+    bool drawCJ = IndicatorsCJEnabled.GetBool(client) && gB_DidCrouchJump[target];
+    bool drawPB = IndicatorsPBEnabled.GetBool(client) && gB_DidPerf[target];
+    bool drawFTG = IndicatorsFTGEnabled.GetBool(client) && gB_FirstTickGain[target];
+
     // Nothing enabled
-    if (!drawJB && !drawCJ && !drawPB)
+    if (!draw || (!drawJB && !drawCJ && !drawPB && !drawFTG))
     {
         return;
     }
@@ -43,12 +51,12 @@ void OnGameFrame_Element_Indicators(int client, int target)
     IndicatorsPosition.GetXY(client, xy);
 
     Call_OnDrawIndicators(client, xy, rgb);
-    SetHudTextParams(xy[0], xy[1], GetTextHoldTime(GetTickInterval()), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
+    SetHudTextParams(xy[0], xy[1], GetTextHoldTimeMHUD(client), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
 
     bool useAbbr = IndicatorsAbbreviations.GetBool(client);
 
     char buffer[64];
-    if (drawJB && gB_DidJumpBug[target])
+    if (drawJB)
     {
         Format(buffer, sizeof(buffer), "%s%s\n",
             buffer,
@@ -56,7 +64,7 @@ void OnGameFrame_Element_Indicators(int client, int target)
         );
     }
 
-    if (drawCJ && gB_DidCrouchJump[target])
+    if (drawCJ)
     {
         Format(buffer, sizeof(buffer), "%s%s\n",
             buffer,
@@ -64,7 +72,7 @@ void OnGameFrame_Element_Indicators(int client, int target)
         );
     }
 
-    if (drawPB && gB_DidPerf[target])
+    if (drawPB)
     {
         Format(buffer, sizeof(buffer), "%s%s\n",
             buffer,
@@ -72,7 +80,7 @@ void OnGameFrame_Element_Indicators(int client, int target)
         );
     }
 
-    if (drawFTG && gB_FirstTickGain[target])
+    if (drawFTG)
     {
         Format(buffer, sizeof(buffer), "%s%s\n",
             buffer,

@@ -45,7 +45,7 @@ enum
     SpeedKeyColor_GainInstant,
     SpeedKeyColor_GainAverage,
     SpeedKeyColor_COUNT
-}
+};
 
 enum
 {
@@ -59,11 +59,21 @@ enum
     Char_ArrRight,
     Char_COUNT
 }
-
+;
 enum
 {
     KeyMouseStyle_Disabled,
     KeysMouseStyle_Side,
     KeysMouseStyle_Line,
     KeysMouseStyle_COUNT
-}
+};
+
+enum
+{
+    UpdateSpeed_Fastest,
+    UpdateSpeed_Fast,
+    UpdateSpeed_Normal,
+    UpdateSpeed_Slow,
+    UpdateSpeed_Slowest,
+    UpdateSpeed_COUNT
+};

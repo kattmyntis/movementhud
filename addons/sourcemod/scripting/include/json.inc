@@ -39,10 +39,10 @@
 #include <string>
 #include <json/definitions>
 #include <json/helpers/decode>
+#include <json/helpers/errors>
 #include <json/helpers/string>
 #include <json/object>
 #include <json/array>
-
 
 /**
  * Calculates the buffer size required to store an encoded JSON instance.
@@ -61,7 +61,7 @@ stock int json_encode_size(JSON_Object obj, int options = JSON_NONE, int depth =
     int size = 1; // for opening bracket
 
     // used in key iterator
-    int json_size = obj.Iterate();
+    int json_size = obj.Length;
     JSON_Object child = null;
     bool is_empty = true;
     int str_length = 0;
@@ -174,7 +174,7 @@ stock void json_encode(
     strcopy(output, max_size, is_array ? "[" : "{");
 
     // used in key iterator
-    int json_size = obj.Iterate();
+    int json_size = obj.Length;
     int builder_size = 0;
     int str_length = 1;
     JSON_Object child = null;
@@ -358,7 +358,7 @@ stock JSON_Object json_decode(
     int length = strlen(buffer);
     // skip preceding whitespace
     if (! json_skip_whitespace(buffer, length, pos)) {
-        LogError("json_decode: buffer ended early at position %d", pos);
+        json_set_last_error("buffer ended early at position %d", pos);
 
         return null;
     }
@@ -369,18 +369,11 @@ stock JSON_Object json_decode(
     if (buffer[pos] == '{') {
         is_array = false;
         obj = new JSON_Object();
-
-        if ((options & JSON_DECODE_ORDERED_KEYS) > 0) {
-            obj.EnableOrderedKeys();
-        }
     } else if (buffer[pos] == '[') {
         is_array = true;
         arr = new JSON_Array();
     } else {
-        LogError(
-            "json_decode: no object or array found at position %d",
-            pos
-        );
+        json_set_last_error("no object or array found at position %d", pos);
 
         return null;
     }
@@ -399,7 +392,7 @@ stock JSON_Object json_decode(
 
         // skip any whitespace preceding the element
         if (! json_skip_whitespace(buffer, length, pos)) {
-            LogError("json_decode: buffer ended early at position %d", pos);
+            json_set_last_error("buffer ended early at position %d", pos);
             json_cleanup_and_delete(obj);
             json_cleanup_and_delete(arr);
 
@@ -423,10 +416,7 @@ stock JSON_Object json_decode(
         if (! is_array) {
             // if dealing with an object, look for the key and determine length
             if (! json_is_string(buffer[pos], allow_single_quotes)) {
-                LogError(
-                    "json_decode: expected key string at position %d",
-                    pos
-                );
+                json_set_last_error("expected key string at position %d", pos);
                 json_cleanup_and_delete(obj);
                 json_cleanup_and_delete(arr);
 
@@ -449,7 +439,7 @@ stock JSON_Object json_decode(
 
             // skip any whitespace following the key
             if (! json_skip_whitespace(buffer, length, pos)) {
-                LogError("json_decode: buffer ended early at position %d", pos);
+                json_set_last_error("buffer ended early at position %d", pos);
                 json_cleanup_and_delete(obj);
                 json_cleanup_and_delete(arr);
 
@@ -458,8 +448,8 @@ stock JSON_Object json_decode(
 
             // ensure that we find a colon
             if (buffer[pos++] != ':') {
-                LogError(
-                    "json_decode: expected colon after key at position %d",
+                json_set_last_error(
+                    "expected colon after key at position %d",
                     pos
                 );
                 json_cleanup_and_delete(obj);
@@ -470,7 +460,7 @@ stock JSON_Object json_decode(
 
             // skip any whitespace following the colon
             if (! json_skip_whitespace(buffer, length, pos)) {
-                LogError("json_decode: buffer ended early at position %d", pos);
+                json_set_last_error("buffer ended early at position %d", pos);
                 json_cleanup_and_delete(obj);
                 json_cleanup_and_delete(arr);
 
@@ -499,6 +489,10 @@ stock JSON_Object json_decode(
                 pos,
                 is_array
             );
+        }
+
+        if (! is_array && obj.HasKey(key)) {
+            obj.Remove(key);
         }
 
         char[] cell = new char[cell_length];
@@ -536,8 +530,8 @@ stock JSON_Object json_decode(
                     cell_length,
                     is_array
                 )) {
-                    LogError(
-                        "json_decode: couldn't extract string at position %d",
+                    json_set_last_error(
+                        "couldn't extract string at position %d",
                         pos
                     );
                     json_cleanup_and_delete(obj);
@@ -561,8 +555,8 @@ stock JSON_Object json_decode(
                     cell_length,
                     is_array
                 )) {
-                    LogError(
-                        "json_decode: couldn't extract until end at position %d",
+                    json_set_last_error(
+                        "couldn't extract until end at position %d",
                         pos
                     );
                     json_cleanup_and_delete(obj);
@@ -572,8 +566,8 @@ stock JSON_Object json_decode(
                 }
 
                 if (strlen(cell) == 0) {
-                    LogError(
-                        "json_decode: empty cell encountered at position %d",
+                    json_set_last_error(
+                        "empty cell encountered at position %d",
                         pos
                     );
                     json_cleanup_and_delete(obj);
@@ -629,8 +623,8 @@ stock JSON_Object json_decode(
                         obj.SetObject(key, null);
                     }
                 } else {
-                    LogError(
-                        "json_decode: unknown type encountered at position %d: %s",
+                    json_set_last_error(
+                        "unknown type encountered at position %d: %s",
                         pos,
                         cell
                     );
@@ -643,7 +637,7 @@ stock JSON_Object json_decode(
         }
 
         if (! json_skip_whitespace(buffer, length, pos)) {
-            LogError("json_decode: buffer ended early at position %d", pos);
+            json_set_last_error("buffer ended early at position %d", pos);
             json_cleanup_and_delete(obj);
             json_cleanup_and_delete(arr);
 
@@ -654,8 +648,8 @@ stock JSON_Object json_decode(
     // skip remaining whitespace and ensure we're at the end of the buffer
     pos += 1;
     if (json_skip_whitespace(buffer, length, pos) && depth == 0) {
-        LogError(
-            "json_decode: unexpected data after structure end at position %d",
+        json_set_last_error(
+            "unexpected data after structure end at position %d",
             pos
         );
         json_cleanup_and_delete(obj);
@@ -717,6 +711,7 @@ stock JSON_Object json_read_from_file(const char[] path, int options = JSON_NONE
 
     f.Seek(0, SEEK_SET);
     f.ReadString(buffer, size);
+    delete f;
 
     return json_decode(buffer, options);
 }
@@ -753,7 +748,7 @@ stock JSON_Object json_copy_deep(JSON_Object obj)
 {
     JSON_Object result = json_copy_shallow(obj);
 
-    int length = obj.Iterate();
+    int length = obj.Length;
     int key_length = 0;
     for (int i = 0; i < length; i += 1) {
         key_length = obj.GetKeySize(i);
@@ -767,7 +762,7 @@ stock JSON_Object json_copy_deep(JSON_Object obj)
         }
 
         JSON_Object value = obj.GetObject(key);
-        result.SetObject(key, json_copy_deep(value));
+        result.SetObject(key, value != null ? json_copy_deep(value) : null);
     }
 
     return result;
@@ -784,7 +779,7 @@ stock void json_cleanup(JSON_Object obj)
         return;
     }
 
-    int length = obj.Iterate();
+    int length = obj.Length;
     int key_length = 0;
     for (int i = 0; i < length; i += 1) {
         key_length = obj.GetKeySize(i);
@@ -803,7 +798,6 @@ stock void json_cleanup(JSON_Object obj)
         }
     }
 
-    delete obj.Snap;
     obj.Super.Cleanup();
 }
 

@@ -25,6 +25,7 @@ bool gB_GOKZReplays;
 
 #include "movementhud/utils.sp"
 #include "movementhud/movement.sp"
+#include "movementhud/elements/misc.sp"
 #include "movementhud/elements/keys.sp"
 #include "movementhud/elements/speed.sp"
 #include "movementhud/elements/indicators.sp"
@@ -65,9 +66,8 @@ public void OnPluginStart()
 	OnPluginStart_Preferences();
 	OnPluginStart_PreferencesDefaults();
 
-	OnPluginStart_Element_Speed();
-	OnPluginStart_Element_Keys();
-	OnPluginStart_Element_Indicators();
+	OnPluginStart_Elements_Mode();
+	OnPluginStart_Elements_Other();
 
 	OnPluginStart_PreferencesCode();
 
@@ -121,7 +121,7 @@ public void OnGameFrame()
 {
 	for (int client = 1; client <= MaxClients; client++)
 	{
-		if (!IsClientInGame(client) || IsFakeClient(client)) continue;
+		if (!IsClientInGame(client) || IsFakeClient(client) || !ShouldUpdateHUD(client)) continue;
 		int target = GetSpectedOrSelf(client);
 
 		OnGameFrame_Element_Keys(client, target);

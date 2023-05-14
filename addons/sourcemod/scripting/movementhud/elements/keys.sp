@@ -39,12 +39,16 @@ static const char KeysStyle[KeysMouseStyle_COUNT][] =
     "Style 2"
 }
 
-void OnPluginStart_Element_Keys()
+void OnPluginStart_Elements_Mode_Keys()
+{
+    KeysMode = new MHudEnumPreference("keys_mode", "Keys - Mode", Modes, sizeof(Modes) - 1, KeysMode_None);
+    KeysPosition = new MHudXYPreference("keys_position", "Keys - Position", -1, 800);
+}
+
+void OnPluginStart_Elements_Other_Keys()
 {
     HudSync = CreateHudSynchronizer();
 
-    KeysMode = new MHudEnumPreference("keys_mode", "Keys - Mode", Modes, sizeof(Modes) - 1, KeysMode_None);
-    KeysPosition = new MHudXYPreference("keys_position", "Keys - Position", -1, 800);
     KeysNormalColor = new MHudRGBPreference("keys_color_normal", "Keys - Normal Color", 255, 255, 255);
     KeysOverlapColor = new MHudRGBPreference("keys_color_overlap", "Keys - Overlap Color", 255, 0, 0);
     KeysMouseDirection = new MHudEnumPreference("keys_mouse_direction", "Keys - Mouse Direction", KeysStyle, sizeof(KeysStyle) - 1, KeyMouseStyle_Disabled);
@@ -142,7 +146,7 @@ void OnGameFrame_Element_Keys(int client, int target)
 
 
     Call_OnDrawKeys(client, xy, rgb);
-    SetHudTextParams(xy[0], xy[1], GetTextHoldTime(GetTickInterval()), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
+    SetHudTextParams(xy[0], xy[1], GetTextHoldTimeMHUD(client), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
 
     int mouseDirectionStyle = KeysMouseDirection.GetInt(client);
     switch (mouseDirectionStyle)
