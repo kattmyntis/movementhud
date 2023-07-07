@@ -11,6 +11,7 @@ enum
     KeysSpaceMode_NativeHD = 0,
     KeysSpaceMode_ResizedHD,
     KeysSpaceMode_NativeQHD,
+    KeysSpaceMode_Legacy,
     KeysSpaceMode_COUNT
 };
 

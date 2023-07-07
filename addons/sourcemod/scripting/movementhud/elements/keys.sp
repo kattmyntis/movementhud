@@ -21,7 +21,8 @@ static const char SpacingModes[KeysSpaceMode_COUNT][] =
 {
     "1080p FS",
     "1440p resized",
-    "1440p native"
+    "1440p native",
+    "Legacy"
 };
 
 static const char KeysColors[SpeedKeyColor_COUNT][] =
@@ -149,47 +150,100 @@ void OnGameFrame_Element_Keys(int client, int target)
     SetHudTextParams(xy[0], xy[1], GetTextHoldTimeMHUD(client), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
 
     int mouseDirectionStyle = KeysMouseDirection.GetInt(client);
+    bool legacy = KeysSpaceMode.GetInt(client) == KeysSpaceMode_Legacy;
+    char blank[2] = "";
+    if (mode == KeysMode_NoBlanks)
+    {
+        Format(blank, sizeof(blank), "—");
+    }
     switch (mouseDirectionStyle)
     {
         case KeyMouseStyle_Disabled:
         {
-            ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s",
-                GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
-                GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
-                GetKeyString(Char_Jump, mode, spaceMode, showJump),
-                GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
-                GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
-                GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT))
-            );
+            if (legacy)
+            {
+                ShowSyncHudText(client, HudSync, "%s  %s  %s\n%s  %s  %s",
+                    (buttons & IN_DUCK)       ? "C" : blank,
+                    (buttons & IN_FORWARD)    ? "W" : blank,
+                    (showJump)                ? "J" : blank,
+                    (buttons & IN_MOVELEFT)   ? "A" : blank,
+                    (buttons & IN_BACK)       ? "S" : blank,
+                    (buttons & IN_MOVERIGHT)  ? "D" : blank
+                );
+            }
+            else
+            {
+                ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s",
+                    GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
+                    GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
+                    GetKeyString(Char_Jump, mode, spaceMode, showJump),
+                    GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
+                    GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
+                    GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT))
+                );
+            }
         }
         case KeysMouseStyle_Side:
         {
             int mouseX = gI_MouseX[target];
-            ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s%s%s",
-                GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
-                GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
-                GetKeyString(Char_Jump, mode, spaceMode, showJump),
-                GetKeyString(Char_ArrLeft, mode, spaceMode, mouseX < 0),
-                GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
-                GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
-                GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT)),
-                GetKeyString(Char_ArrRight, mode, spaceMode, mouseX > 0)
-            );
+            if (legacy)
+            {
+                ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s%s%s",
+                    GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
+                    GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
+                    GetKeyString(Char_Jump, mode, spaceMode, showJump),
+                    GetKeyString(Char_ArrLeft, mode, spaceMode, mouseX < 0),
+                    GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
+                    GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
+                    GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT)),
+                    GetKeyString(Char_ArrRight, mode, spaceMode, mouseX > 0)
+                );
+            }
+            else
+            {
+                ShowSyncHudText(client, HudSync, "%s  %s  %s\n%s %s  %s  %s %s",
+                    (buttons & IN_DUCK)       ? "C" : blank,
+                    (buttons & IN_FORWARD)    ? "W" : blank,
+                    (showJump)                ? "J" : blank,
+                    (mouseX < 0)              ? "←" : blank,
+                    (buttons & IN_MOVELEFT)   ? "A" : blank,
+                    (buttons & IN_BACK)       ? "S" : blank,
+                    (buttons & IN_MOVERIGHT)  ? "D" : blank,
+                    (mouseX > 0)              ? "→" : blank
+                );
+            }
         }
         case KeysMouseStyle_Line:
         {
             int mouseX = gI_MouseX[target];
-            ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s\n%s%s%s",
-                GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
-                GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
-                GetKeyString(Char_Jump, mode, spaceMode, showJump),
-                GetKeyString(Char_ArrLeft, mode, spaceMode, mouseX < 0),
-                GetKeyString(Char_Jump, KeysMode_NoBlanks, spaceMode, false), // Key doesn't matter.
-                GetKeyString(Char_ArrRight, mode, spaceMode, mouseX > 0),
-                GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
-                GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
-                GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT))
-            );
+            if (legacy)
+            {
+                ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s\n%s%s%s",
+                    (buttons & IN_DUCK)       ? "C" : blank,
+                    (buttons & IN_FORWARD)    ? "W" : blank,
+                    (showJump)                ? "J" : blank,
+                    (mouseX < 0)              ? "←" : blank,
+                    GetKeyString(Char_Jump, KeysMode_NoBlanks, spaceMode, false), // Key doesn't matter.
+                    (mouseX > 0)              ? "→" : blank,
+                    (buttons & IN_MOVELEFT)   ? "A" : blank,
+                    (buttons & IN_BACK)       ? "S" : blank,
+                    (buttons & IN_MOVERIGHT)  ? "D" : blank
+                );
+            }
+            else
+            {
+                ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s\n%s%s%s",
+                    GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
+                    GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
+                    GetKeyString(Char_Jump, mode, spaceMode, showJump),
+                    GetKeyString(Char_ArrLeft, mode, spaceMode, mouseX < 0),
+                    GetKeyString(Char_Jump, KeysMode_NoBlanks, spaceMode, false), // Key doesn't matter.
+                    GetKeyString(Char_ArrRight, mode, spaceMode, mouseX > 0),
+                    GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
+                    GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
+                    GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT))
+                );
+            }
         }
     }
 }
