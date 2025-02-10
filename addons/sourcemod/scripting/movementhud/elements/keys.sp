@@ -188,19 +188,6 @@ void OnGameFrame_Element_Keys(int client, int target)
             int mouseX = gI_MouseX[target];
             if (legacy)
             {
-                ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s%s%s",
-                    GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
-                    GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
-                    GetKeyString(Char_Jump, mode, spaceMode, showJump),
-                    GetKeyString(Char_ArrLeft, mode, spaceMode, mouseX < 0),
-                    GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
-                    GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
-                    GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT)),
-                    GetKeyString(Char_ArrRight, mode, spaceMode, mouseX > 0)
-                );
-            }
-            else
-            {
                 ShowSyncHudText(client, HudSync, "%s  %s  %s\n%s %s  %s  %s %s",
                     (buttons & IN_DUCK)       ? "C" : blank,
                     (buttons & IN_FORWARD)    ? "W" : blank,
@@ -210,6 +197,19 @@ void OnGameFrame_Element_Keys(int client, int target)
                     (buttons & IN_BACK)       ? "S" : blank,
                     (buttons & IN_MOVERIGHT)  ? "D" : blank,
                     (mouseX > 0)              ? "→" : blank
+                );
+            }
+            else
+            {
+                ShowSyncHudText(client, HudSync, "%s%s%s\n%s%s%s%s%s",
+                    GetKeyString(Char_Crouch, mode, spaceMode, !!(buttons & IN_DUCK)),
+                    GetKeyString(Char_W, mode, spaceMode, !!(buttons & IN_FORWARD)),
+                    GetKeyString(Char_Jump, mode, spaceMode, showJump),
+                    GetKeyString(Char_ArrLeft, mode, spaceMode, mouseX < 0),
+                    GetKeyString(Char_A, mode, spaceMode, !!(buttons & IN_MOVELEFT)),
+                    GetKeyString(Char_S, mode, spaceMode, !!(buttons & IN_BACK)),
+                    GetKeyString(Char_D, mode, spaceMode, !!(buttons & IN_MOVERIGHT)),
+                    GetKeyString(Char_ArrRight, mode, spaceMode, mouseX > 0)
                 );
             }
         }
